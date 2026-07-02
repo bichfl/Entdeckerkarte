@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="de">
+<!DOCTYPE html>
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,19 +10,21 @@
     <!-- Verhindert den Favicon-Fehler in der Konsole -->
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     
-    <!-- FIX: Alle Dateien werden jetzt absolut sicher lokal aus deinem GitHub-Repository geladen -->
+    <!-- Diese zwei Zeilen funktionieren jetzt super aus deinem Ordner! -->
     <link rel="stylesheet" href="leaflet.css" />
     <script src="leaflet.js"></script>
 
-    <link rel="stylesheet" href="MarkerCluster.css" />
-    <link rel="stylesheet" href="MarkerCluster.Default.css" />
-    <script src="leaflet.markercluster.js"></script>
+    <!-- KORREKTUR: Wir laden NUR die Cluster-Dateien über das bombenfeste CDN -->
+    <link rel="stylesheet" href="https://cloudflare.com" />
+    <link rel="stylesheet" href="https://cloudflare.com" />
+    <script src="https://cloudflare.com"></script>
 
     <style>
         /* Feste Höhe für die Karte */
         #map { height: 600px; width: 100%; }
     </style>
 </head>
+
 
 <body>
 

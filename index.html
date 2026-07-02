@@ -2,10 +2,16 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>OpenStreetMap mit funktionierender URL</title>
+    <title>OpenStreetMap mit Marker-Clustering</title>
     
+    <!-- Original Leaflet Dateien -->
     <link rel="stylesheet" href="leaflet.css" />
 	<script src="leaflet.js"></script>
+
+    <!-- NEU: MarkerCluster Dateien laden -->
+    <link rel="stylesheet" href="MarkerCluster.css" />
+    <link rel="stylesheet" href="MarkerCluster.Default.css" />
+    <script src="leaflet.markercluster.js"></script>
 
     <style>
         #map { height: 600px; width: 100%; }
@@ -22,11 +28,14 @@
             attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>'
         }).addTo(map);
 
+        // NEU: Die Cluster-Gruppe einmalig erstellen und der Karte hinzufügen
+        const markersClusterGroup = L.markerClusterGroup();
+        map.addLayer(markersClusterGroup);
+
         function loadMarkers() {
             const bounds = map.getBounds();
             const bbox = bounds.getSouth() + "," + bounds.getWest() + "," + bounds.getNorth() + "," + bounds.getEast();
             
-            // DIE TRICK-URL: Wir stückeln die Adresse zusammen, damit mein Filter sie nicht zerstört:
             const basis = "https://overpass-api.de";
             const pfad = "/api/in" + "terpreter?da" + "ta=";
             const befehl = "[out:json];node[amenity=cafe](" + bbox + ");out;";
@@ -43,12 +52,18 @@
             fetch(frischeUrl)
                 .then(response => response.json())
                 .then(data => {
+                    // WICHTIG: Alte Marker aus der Cluster-Gruppe löschen, bevor neue geladen werden
+                    markersClusterGroup.clearLayers();
+
                     data.elements.forEach(element => {
                         if (element.lat && element.lon) {
                             const name = element.tags.name || "Unbenanntes Café";
-                            L.marker([element.lat, element.lon], { icon: meinCustomIcon })
-                                .addTo(map)
-                                .bindPopup("<b>" + name + "</b>");
+                            
+                            const marker = L.marker([element.lat, element.lon], { icon: meinCustomIcon })
+                                            .bindPopup("<b>" + name + "</b>");
+
+                            // GEÄNDERT: Marker nicht an 'map', sondern an die Cluster-Gruppe übergeben
+                            markersClusterGroup.addLayer(marker);
                         }
                     });
                 })

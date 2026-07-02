@@ -4,14 +4,17 @@
     <meta charset="UTF-8">
     <title>OpenStreetMap mit Marker-Clustering</title>
     
-    <!-- KORREKTUR: Vollständige Leaflet Original-Dateien über das CDN laden -->
-    <link rel="stylesheet" href="https://unpkg.com" />
-    <script src="https://unpkg.com"></script>
+    <!-- FIX: Favicon-Fehler unterdrücken -->
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    
+    <!-- KORREKTUR: Leaflet Original-Dateien über das ultra-stabile cdnjs laden -->
+    <link rel="stylesheet" href="https://cloudflare.com" />
+    <script src="https://cloudflare.com"></script>
 
-    <!-- KORREKTUR: Vollständige MarkerCluster-Dateien über das CDN laden -->
-    <link rel="stylesheet" href="https://unpkg.com" />
-    <link rel="stylesheet" href="https://unpkg.com" />
-    <script src="https://unpkg.com"></script>
+    <!-- KORREKTUR: MarkerCluster-Dateien ebenfalls über cdnjs laden -->
+    <link rel="stylesheet" href="https://cloudflare.com" />
+    <link rel="stylesheet" href="https://cloudflare.com" />
+    <script src="https://cloudflare.com"></script>
 
     <style>
         #map { height: 600px; width: 100%; }
@@ -23,13 +26,14 @@
     <div id="map"></div>
 
     <script>
+        // Karte initialisieren, sobald die Skripte bereitstehen
         const map = L.map('map').setView([52.5200, 13.4050], 14);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>'
         }).addTo(map);
 
-        // Die Cluster-Gruppe einmalig erstellen und der Karte hinzufügen
+        // Die Cluster-Gruppe erstellen und der Karte hinzufügen
         const markersClusterGroup = L.markerClusterGroup();
         map.addLayer(markersClusterGroup);
 
@@ -53,7 +57,7 @@
             fetch(frischeUrl)
                 .then(response => response.json())
                 .then(data => {
-                    // WICHTIG: Alte Marker aus der Cluster-Gruppe löschen, bevor neue geladen werden
+                    // Alte Marker löschen
                     markersClusterGroup.clearLayers();
 
                     data.elements.forEach(element => {
@@ -63,7 +67,7 @@
                             const marker = L.marker([element.lat, element.lon], { icon: meinCustomIcon })
                                             .bindPopup("<b>" + name + "</b>");
 
-                            // Marker an die Cluster-Gruppe übergeben
+                            // In die Cluster-Gruppe einfügen
                             markersClusterGroup.addLayer(marker);
                         }
                     });

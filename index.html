@@ -1,22 +1,25 @@
 <!DOCTYPE html>
 <html lang="de">
+<!DOCTYPE html>
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <title>OpenStreetMap mit Marker-Clustering</title>
     
-    <!-- Original Leaflet Dateien -->
-    <link rel="stylesheet" href="leaflet.css" />
-	<script src="leaflet.js"></script>
+    <!-- Original Leaflet Dateien (über Internet-Link laden) -->
+    <link rel="stylesheet" href="https://unpkg.com" />
+    <script src="https://unpkg.com"></script>
 
-    <!-- NEU: MarkerCluster Dateien laden -->
-    <link rel="stylesheet" href="MarkerCluster.css" />
-    <link rel="stylesheet" href="MarkerCluster.Default.css" />
-    <script src="leaflet.markercluster.js"></script>
+    <!-- NEU: MarkerCluster Dateien (direkt über stabiles Internet-CDN laden) -->
+    <link rel="stylesheet" href="https://unpkg.com" />
+    <link rel="stylesheet" href="https://unpkg.com" />
+    <script src="https://unpkg.com"></script>
 
     <style>
         #map { height: 600px; width: 100%; }
     </style>
 </head>
+
 <body>
 
     <div id="map"></div>

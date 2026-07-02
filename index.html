@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html lang="de">
-<!DOCTYPE html>
-<html lang="de">
 <head>
     <meta charset="UTF-8">
     <title>OpenStreetMap mit Marker-Clustering</title>
     
-    <!-- Original Leaflet Dateien (über Internet-Link laden) -->
+    <!-- KORREKTUR: Vollständige Leaflet Original-Dateien über das CDN laden -->
     <link rel="stylesheet" href="https://unpkg.com" />
     <script src="https://unpkg.com"></script>
 
-    <!-- NEU: MarkerCluster Dateien (direkt über stabiles Internet-CDN laden) -->
+    <!-- KORREKTUR: Vollständige MarkerCluster-Dateien über das CDN laden -->
     <link rel="stylesheet" href="https://unpkg.com" />
     <link rel="stylesheet" href="https://unpkg.com" />
     <script src="https://unpkg.com"></script>
@@ -31,7 +29,7 @@
             attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>'
         }).addTo(map);
 
-        // NEU: Die Cluster-Gruppe einmalig erstellen und der Karte hinzufügen
+        // Die Cluster-Gruppe einmalig erstellen und der Karte hinzufügen
         const markersClusterGroup = L.markerClusterGroup();
         map.addLayer(markersClusterGroup);
 
@@ -65,7 +63,7 @@
                             const marker = L.marker([element.lat, element.lon], { icon: meinCustomIcon })
                                             .bindPopup("<b>" + name + "</b>");
 
-                            // GEÄNDERT: Marker nicht an 'map', sondern an die Cluster-Gruppe übergeben
+                            // Marker an die Cluster-Gruppe übergeben
                             markersClusterGroup.addLayer(marker);
                         }
                     });

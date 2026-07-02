@@ -2,21 +2,23 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OpenStreetMap mit Marker-Clustering</title>
     
-    <!-- FIX: Favicon-Fehler unterdrücken -->
+    <!-- FIX: Favicon-Fehler im Browser unterdrücken -->
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     
-    <!-- KORREKTUR: Leaflet Original-Dateien über das ultra-stabile cdnjs laden -->
+    <!-- Leaflet Original-Dateien über cdnjs -->
     <link rel="stylesheet" href="https://cloudflare.com" />
     <script src="https://cloudflare.com"></script>
 
-    <!-- KORREKTUR: MarkerCluster-Dateien ebenfalls über cdnjs laden -->
+    <!-- MarkerCluster-Dateien über cdnjs -->
     <link rel="stylesheet" href="https://cloudflare.com" />
     <link rel="stylesheet" href="https://cloudflare.com" />
     <script src="https://cloudflare.com"></script>
 
     <style>
+        /* Feste Höhe für die Karte */
         #map { height: 600px; width: 100%; }
     </style>
 </head>
@@ -26,57 +28,59 @@
     <div id="map"></div>
 
     <script>
-        // Karte initialisieren, sobald die Skripte bereitstehen
-        const map = L.map('map').setView([52.5200, 13.4050], 14);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>'
-        }).addTo(map);
-
-        // Die Cluster-Gruppe erstellen und der Karte hinzufügen
-        const markersClusterGroup = L.markerClusterGroup();
-        map.addLayer(markersClusterGroup);
-
-        function loadMarkers() {
-            const bounds = map.getBounds();
-            const bbox = bounds.getSouth() + "," + bounds.getWest() + "," + bounds.getNorth() + "," + bounds.getEast();
+        // SICHERHEITSNETZ: Warte, bis ALLE externen Skripte komplett geladen sind
+        window.onload = function() {
             
-            const basis = "https://overpass-api.de";
-            const pfad = "/api/in" + "terpreter?da" + "ta=";
-            const befehl = "[out:json];node[amenity=cafe](" + bbox + ");out;";
-            
-            const frischeUrl = basis + pfad + befehl;
-			
-			const meinCustomIcon = L.icon({
-			  iconUrl: 'icon.png',
-			  iconSize: L.point(32, 32),
-			  iconAnchor: L.point(16, 32),
-			  popupAnchor: L.point(0, -32)
-			});
+            // Erst JETZT existiert "L" garantiert im Browser!
+            const map = L.map('map').setView([52.5200, 13.4050], 14);
 
-            fetch(frischeUrl)
-                .then(response => response.json())
-                .then(data => {
-                    // Alte Marker löschen
-                    markersClusterGroup.clearLayers();
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>'
+            }).addTo(map);
 
-                    data.elements.forEach(element => {
-                        if (element.lat && element.lon) {
-                            const name = element.tags.name || "Unbenanntes Café";
-                            
-                            const marker = L.marker([element.lat, element.lon], { icon: meinCustomIcon })
-                                            .bindPopup("<b>" + name + "</b>");
+            // Die Cluster-Gruppe erstellen und hinzufügen
+            const markersClusterGroup = L.markerClusterGroup();
+            map.addLayer(markersClusterGroup);
 
-                            // In die Cluster-Gruppe einfügen
-                            markersClusterGroup.addLayer(marker);
-                        }
-                    });
-                })
-                .catch(error => console.error("Fehler beim Laden der OSM-Daten:", error));
-        }
+            function loadMarkers() {
+                const bounds = map.getBounds();
+                const bbox = bounds.getSouth() + "," + bounds.getWest() + "," + bounds.getNorth() + "," + bounds.getEast();
+                
+                const basis = "https://overpass-api.de";
+                const pfad = "/api/in" + "terpreter?da" + "ta=";
+                const befehl = "[out:json];node[amenity=cafe](" + bbox + ");out;";
+                
+                const frischeUrl = basis + pfad + befehl;
+				
+				const meinCustomIcon = L.icon({
+				  iconUrl: 'icon.png',
+				  iconSize: L.point(32, 32),
+				  iconAnchor: L.point(16, 32),
+				  popupAnchor: L.point(0, -32)
+				});
 
-        map.on('moveend', loadMarkers);
-        loadMarkers();
+                fetch(frischeUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        markersClusterGroup.clearLayers();
+
+                        data.elements.forEach(element => {
+                            if (element.lat && element.lon) {
+                                const name = element.tags.name || "Unbenanntes Café";
+                                
+                                const marker = L.marker([element.lat, element.lon], { icon: meinCustomIcon })
+                                                .bindPopup("<b>" + name + "</b>");
+
+                                markersClusterGroup.addLayer(marker);
+                            }
+                        });
+                    })
+                    .catch(error => console.error("Fehler beim Laden der OSM-Daten:", error));
+            }
+
+            map.on('moveend', loadMarkers);
+            loadMarkers();
+        };
     </script>
 </body>
 </html>

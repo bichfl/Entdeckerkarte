@@ -1,7 +1,5 @@
 <!DOCTYPE html>
 <html lang="de">
-<!DOCTYPE html>
-<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,11 +8,11 @@
     <!-- Verhindert den Favicon-Fehler in der Konsole -->
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     
-    <!-- Diese zwei Zeilen funktionieren jetzt super aus deinem Ordner! -->
+    <!-- Lokale Leaflet-Dateien aus deinem Projektordner -->
     <link rel="stylesheet" href="leaflet.css" />
     <script src="leaflet.js"></script>
 
-    <!-- KORREKTUR: Wir laden NUR die Cluster-Dateien über das bombenfeste CDN -->
+    <!-- KORREKTUR: Vollständige CDN-Links für das Marker-Clustering Plugin -->
     <link rel="stylesheet" href="https://cloudflare.com" />
     <link rel="stylesheet" href="https://cloudflare.com" />
     <script src="https://cloudflare.com"></script>
@@ -32,8 +30,9 @@
 
     <script>
         function initMap() {
-            if (typeof L === 'undefined') {
-                console.log("Warte auf Leaflet-Bibliothek...");
+            // Erweiterte Sicherheitsabfrage für Leaflet UND das Cluster-Plugin
+            if (typeof L === 'undefined' || typeof L.markerClusterGroup === 'undefined') {
+                console.log("Warte auf Leaflet und Cluster-Bibliothek...");
                 setTimeout(initMap, 200);
                 return;
             }

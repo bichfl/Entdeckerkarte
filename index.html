@@ -47,16 +47,21 @@
             const markersClusterGroup = L.markerClusterGroup();
             map.addLayer(markersClusterGroup);
 
-                        function loadMarkers() {
+			            // Liste verlässlicher, öffentlicher Overpass-Server
+            const overpassServers = [
+                "https://overpass.private.coffee", // Sehr schneller, stabiler Mirror
+                "https://overpass-api.de",         // Hauptserver (deiner)
+                "https://openstreetmap.fr" // Französischer Community-Server
+            ];
+            let currentServerIndex = 0;
+
+            function loadMarkers() {
                 const zoom = map.getZoom();
                 let bbox = "";
 
-                // Wenn zu weit herausgezoomt (Zoom unter 13), begrenzen wir den Suchbereich künstlich
                 if (zoom < 13) {
                     console.log("Zoom niedrig. Begrenze Overpass-Suchbereich auf Kartenzentrum.");
-                    
                     const center = map.getCenter();
-                    // Errechnet ein kleines, stabiles Suchfenster um das Zentrum (ca. 10-15km)
                     const latOffset = 0.08; 
                     const lonOffset = 0.15; 
 
@@ -67,40 +72,50 @@
 
                     bbox = south + "," + west + "," + north + "," + east;
                 } else {
-                    // Im normalen Zoom-Level nutzen wir das gesamte sichtbare Fenster
                     const bounds = map.getBounds();
                     bbox = bounds.getSouth() + "," + bounds.getWest() + "," + bounds.getNorth() + "," + bounds.getEast();
                 }
                 
-                const basis = "https://overpass-api.de";
-                const pfad = "/api/interpreter?data=";
-                const befehl = "[out:json];node[amenity=cafe](" + bbox + ");out;";
+                const befehl = "[out:json][timeout:25];node[amenity=cafe](" + bbox + ");out;";
                 
-                const frischeUrl = basis + pfad + befehl;
-				
-				const meinCustomIcon = L.icon({
-				  iconUrl: 'icon.png',
-				  iconSize: L.point(32, 32),
-				  iconAnchor: L.point(16, 32),
-				  popupAnchor: L.point(0, -32)
-				});
+                // Funktion, die versucht die Daten zu laden und bei Fehlern den Server wechselt
+                function tryFetch(serverIndex) {
+                    if (serverIndex >= overpassServers.length) {
+                        console.error("Alle Overpass-Server sind aktuell nicht erreichbar.");
+                        return;
+                    }
 
-                fetch(frischeUrl)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Alte Marker entfernen, um Speicher zu sparen und die Performance zu sichern
-                        markersClusterGroup.clearLayers();
+                    const basis = overpassServers[serverIndex];
+                    const frischeUrl = basis + "/api/interpreter?data=" + befehl;
 
-                        data.elements.forEach(element => {
-                            if (element.lat && element.lon) {
-                                const name = element.tags.name || "Unbenanntes Café";
-                                const marker = L.marker([element.lat, element.lon], { icon: meinCustomIcon })
-                                                .bindPopup("<b>" + name + "</b>");
-                                markersClusterGroup.addLayer(marker);
-                            }
+                    console.log("Probiere Server: " + basis);
+
+                    fetch(frischeUrl)
+                        .then(response => {
+                            if (!response.ok) throw new Error("Server-Fehler: " + response.status);
+                            return response.json();
+                        })
+                        .then(data => {
+                            // Erfolg! Daten verarbeiten
+                            markersClusterGroup.clearLayers();
+                            data.elements.forEach(element => {
+                                if (element.lat && element.lon) {
+                                    const name = element.tags.name || "Unbenanntes Café";
+                                    const marker = L.marker([element.lat, element.lon], { icon: meinCustomIcon })
+                                                    .bindPopup("<b>" + name + "</b>");
+                                    markersClusterGroup.addLayer(marker);
+                                }
+                            });
+                        })
+                        .catch(error => {
+                            console.warn("Fehler bei " + basis + " (" + error.message + "). Wechsle zum nächsten Server...");
+                            // Bei Timeout oder Fehler: Nächsten Server in der Liste anfragen
+                            tryFetch(serverIndex + 1);
                         });
-                    })
-                    .catch(error => console.error("Fehler beim Laden der OSM-Daten:", error));
+                }
+
+                // Starte den Ladeversuch beim ersten Server
+                tryFetch(0);
             }
 
 

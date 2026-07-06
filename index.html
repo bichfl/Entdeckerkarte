@@ -47,12 +47,33 @@
             const markersClusterGroup = L.markerClusterGroup();
             map.addLayer(markersClusterGroup);
 
-            function loadMarkers() {
-                const bounds = map.getBounds();
-                const bbox = bounds.getSouth() + "," + bounds.getWest() + "," + bounds.getNorth() + "," + bounds.getEast();
+                        function loadMarkers() {
+                const zoom = map.getZoom();
+                let bbox = "";
+
+                // Wenn zu weit herausgezoomt (Zoom unter 13), begrenzen wir den Suchbereich künstlich
+                if (zoom < 13) {
+                    console.log("Zoom niedrig. Begrenze Overpass-Suchbereich auf Kartenzentrum.");
+                    
+                    const center = map.getCenter();
+                    // Errechnet ein kleines, stabiles Suchfenster um das Zentrum (ca. 10-15km)
+                    const latOffset = 0.08; 
+                    const lonOffset = 0.15; 
+
+                    const south = center.lat - latOffset;
+                    const west = center.lng - lonOffset;
+                    const north = center.lat + latOffset;
+                    const east = center.lng + lonOffset;
+
+                    bbox = south + "," + west + "," + north + "," + east;
+                } else {
+                    // Im normalen Zoom-Level nutzen wir das gesamte sichtbare Fenster
+                    const bounds = map.getBounds();
+                    bbox = bounds.getSouth() + "," + bounds.getWest() + "," + bounds.getNorth() + "," + bounds.getEast();
+                }
                 
                 const basis = "https://overpass-api.de";
-                const pfad = "/api/in" + "terpreter?da" + "ta=";
+                const pfad = "/api/interpreter?data=";
                 const befehl = "[out:json];node[amenity=cafe](" + bbox + ");out;";
                 
                 const frischeUrl = basis + pfad + befehl;
@@ -67,6 +88,7 @@
                 fetch(frischeUrl)
                     .then(response => response.json())
                     .then(data => {
+                        // Alte Marker entfernen, um Speicher zu sparen und die Performance zu sichern
                         markersClusterGroup.clearLayers();
 
                         data.elements.forEach(element => {
@@ -80,6 +102,7 @@
                     })
                     .catch(error => console.error("Fehler beim Laden der OSM-Daten:", error));
             }
+
 
             map.on('moveend', loadMarkers);
             loadMarkers();
